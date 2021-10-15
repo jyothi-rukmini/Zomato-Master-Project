@@ -11,15 +11,9 @@ exports["default"] = void 0;
 
 var _express = _interopRequireDefault(require("express"));
 
-var _bcryptjs = _interopRequireDefault(require("bcryptjs"));
-
-var _jsonwebtoken = _interopRequireDefault(require("jsonwebtoken"));
-
 var _passport = _interopRequireDefault(require("passport"));
 
-var _user = require("../../database/user");
-
-var _auth = require("../../validation/auth");
+var _allModels = require("../../database/allModels");
 
 function _interopRequireDefault(obj) {
   return obj && obj.__esModule ? obj : {
@@ -65,54 +59,46 @@ function _asyncToGenerator(fn) {
 
 var Router = _express["default"].Router();
 /*
-Route     /signup
-Des       Register new user
-Params    none
+Route     /list
+Des       Get all list menu based on id
+Params    _id
 Access    Public
-Method    POST  
+Method    GET  
 */
 
 
-Router.post("/signup", /*#__PURE__*/function () {
+Router.get("/list/:_id", /*#__PURE__*/function () {
   var _ref = _asyncToGenerator( /*#__PURE__*/_regenerator["default"].mark(function _callee(req, res) {
-    var newUser, token;
+    var _id, menus;
+
     return _regenerator["default"].wrap(function _callee$(_context) {
       while (1) {
         switch (_context.prev = _context.next) {
           case 0:
             _context.prev = 0;
-            _context.next = 3;
-            return (0, _auth.ValidateSignup)(req.body.credentials);
+            _id = req.params._id;
+            _context.next = 4;
+            return _allModels.MenuModel.findById(_id);
 
-          case 3:
-            _context.next = 5;
-            return _user.UserModel.findByEmailAndPhone(req.body.credentials);
-
-          case 5:
-            _context.next = 7;
-            return _user.UserModel.create(req.body.credentials);
-
-          case 7:
-            newUser = _context.sent;
-            token = newUser.generateJwtToken();
-            return _context.abrupt("return", res.status(200).json({
-              token: token,
-              status: "success"
+          case 4:
+            menus = _context.sent;
+            return _context.abrupt("return", res.json({
+              menus: menus
             }));
 
-          case 12:
-            _context.prev = 12;
+          case 8:
+            _context.prev = 8;
             _context.t0 = _context["catch"](0);
             return _context.abrupt("return", res.status(500).json({
               error: _context.t0.message
             }));
 
-          case 15:
+          case 11:
           case "end":
             return _context.stop();
         }
       }
-    }, _callee, null, [[0, 12]]);
+    }, _callee, null, [[0, 8]]);
   }));
 
   return function (_x, _x2) {
@@ -120,78 +106,50 @@ Router.post("/signup", /*#__PURE__*/function () {
   };
 }());
 /*
-Route     /signin
-Des       Signin with email and password
-Params    none
+Route     /image
+Des       Get all menu images based on id
+Params    _id
 Access    Public
-Method    POST  
+Method    GET  
 */
 
-Router.post("/signin", /*#__PURE__*/function () {
+Router.get("/image/:_id", /*#__PURE__*/function () {
   var _ref2 = _asyncToGenerator( /*#__PURE__*/_regenerator["default"].mark(function _callee2(req, res) {
-    var user, token;
+    var _id, menus;
+
     return _regenerator["default"].wrap(function _callee2$(_context2) {
       while (1) {
         switch (_context2.prev = _context2.next) {
           case 0:
             _context2.prev = 0;
-            _context2.next = 3;
-            return (0, _auth.ValidateSignin)(req.body.credentials);
+            _id = req.params._id;
+            _context2.next = 4;
+            return _allModels.ImageModel.findOne(_id);
 
-          case 3:
-            _context2.next = 5;
-            return _user.UserModel.findByEmailAndPassword(req.body.credentials);
-
-          case 5:
-            user = _context2.sent;
-            token = user.generateJwtToken();
-            return _context2.abrupt("return", res.status(200).json({
-              token: token,
-              status: "success"
+          case 4:
+            menus = _context2.sent;
+            return _context2.abrupt("return", res.json({
+              menus: menus
             }));
 
-          case 10:
-            _context2.prev = 10;
+          case 8:
+            _context2.prev = 8;
             _context2.t0 = _context2["catch"](0);
             return _context2.abrupt("return", res.status(500).json({
               error: _context2.t0.message
             }));
 
-          case 13:
+          case 11:
           case "end":
             return _context2.stop();
         }
       }
-    }, _callee2, null, [[0, 10]]);
+    }, _callee2, null, [[0, 8]]);
   }));
 
   return function (_x3, _x4) {
     return _ref2.apply(this, arguments);
   };
 }());
-/*
-Route     /google
-Des       Google Signin
-Params    none
-Access    Public
-Method    GET  
-*/
-
-Router.get("/google", _passport["default"].authenticate("google", {
-  scope: ["https://www.googleapis.com/auth/userinfo.profile", "https://www.googleapis.com/auth/userinfo.email"]
-}));
-/*
-Route     /google/callback
-Des       Google Signin Callback
-Params    none
-Access    Public
-Method    GET  
-*/
-
-Router.get("/google/callback", _passport["default"].authenticate("google", {
-  failureRedirect: "/"
-}), function (req, res) {
-  return res.redirect("http://localhost:3000/google/".concat(req.session.passport.user.token));
-});
 var _default = Router;
 exports["default"] = _default;

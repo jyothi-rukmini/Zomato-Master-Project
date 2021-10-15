@@ -11,15 +11,9 @@ exports["default"] = void 0;
 
 var _express = _interopRequireDefault(require("express"));
 
-var _bcryptjs = _interopRequireDefault(require("bcryptjs"));
-
-var _jsonwebtoken = _interopRequireDefault(require("jsonwebtoken"));
-
 var _passport = _interopRequireDefault(require("passport"));
 
-var _user = require("../../database/user");
-
-var _auth = require("../../validation/auth");
+var _allModels = require("../../database/allModels");
 
 function _interopRequireDefault(obj) {
   return obj && obj.__esModule ? obj : {
@@ -65,54 +59,47 @@ function _asyncToGenerator(fn) {
 
 var Router = _express["default"].Router();
 /*
-Route     /signup
-Des       Register new user
-Params    none
+Route     /
+Des       Get user data
+Params    _id
+BODY      none
 Access    Public
-Method    POST  
+Method    GET  
 */
 
 
-Router.post("/signup", /*#__PURE__*/function () {
+Router.get("/", _passport["default"].authenticate("jwt"), /*#__PURE__*/function () {
   var _ref = _asyncToGenerator( /*#__PURE__*/_regenerator["default"].mark(function _callee(req, res) {
-    var newUser, token;
+    var _req$session$passport, email, fullname, phoneNumber, address;
+
     return _regenerator["default"].wrap(function _callee$(_context) {
       while (1) {
         switch (_context.prev = _context.next) {
           case 0:
             _context.prev = 0;
-            _context.next = 3;
-            return (0, _auth.ValidateSignup)(req.body.credentials);
-
-          case 3:
-            _context.next = 5;
-            return _user.UserModel.findByEmailAndPhone(req.body.credentials);
-
-          case 5:
-            _context.next = 7;
-            return _user.UserModel.create(req.body.credentials);
-
-          case 7:
-            newUser = _context.sent;
-            token = newUser.generateJwtToken();
-            return _context.abrupt("return", res.status(200).json({
-              token: token,
-              status: "success"
+            _req$session$passport = req.session.passport.user._doc, email = _req$session$passport.email, fullname = _req$session$passport.fullname, phoneNumber = _req$session$passport.phoneNumber, address = _req$session$passport.address;
+            return _context.abrupt("return", res.json({
+              user: {
+                email: email,
+                fullname: fullname,
+                phoneNumber: phoneNumber,
+                address: address
+              }
             }));
 
-          case 12:
-            _context.prev = 12;
+          case 5:
+            _context.prev = 5;
             _context.t0 = _context["catch"](0);
             return _context.abrupt("return", res.status(500).json({
               error: _context.t0.message
             }));
 
-          case 15:
+          case 8:
           case "end":
             return _context.stop();
         }
       }
-    }, _callee, null, [[0, 12]]);
+    }, _callee, null, [[0, 5]]);
   }));
 
   return function (_x, _x2) {
@@ -120,49 +107,47 @@ Router.post("/signup", /*#__PURE__*/function () {
   };
 }());
 /*
-Route     /signin
-Des       Signin with email and password
-Params    none
+Route     /:_id
+Des       Get user data
+Params    _id
+BODY      none
 Access    Public
-Method    POST  
+Method    GET  
 */
 
-Router.post("/signin", /*#__PURE__*/function () {
+Router.get("/:_id", /*#__PURE__*/function () {
   var _ref2 = _asyncToGenerator( /*#__PURE__*/_regenerator["default"].mark(function _callee2(req, res) {
-    var user, token;
+    var user, fullname;
     return _regenerator["default"].wrap(function _callee2$(_context2) {
       while (1) {
         switch (_context2.prev = _context2.next) {
           case 0:
             _context2.prev = 0;
             _context2.next = 3;
-            return (0, _auth.ValidateSignin)(req.body.credentials);
+            return _allModels.UserModel.findById(req.params._id);
 
           case 3:
-            _context2.next = 5;
-            return _user.UserModel.findByEmailAndPassword(req.body.credentials);
-
-          case 5:
             user = _context2.sent;
-            token = user.generateJwtToken();
-            return _context2.abrupt("return", res.status(200).json({
-              token: token,
-              status: "success"
+            fullname = user.fullname;
+            return _context2.abrupt("return", res.json({
+              user: {
+                fullname: fullname
+              }
             }));
 
-          case 10:
-            _context2.prev = 10;
+          case 8:
+            _context2.prev = 8;
             _context2.t0 = _context2["catch"](0);
             return _context2.abrupt("return", res.status(500).json({
               error: _context2.t0.message
             }));
 
-          case 13:
+          case 11:
           case "end":
             return _context2.stop();
         }
       }
-    }, _callee2, null, [[0, 10]]);
+    }, _callee2, null, [[0, 8]]);
   }));
 
   return function (_x3, _x4) {
@@ -170,28 +155,55 @@ Router.post("/signin", /*#__PURE__*/function () {
   };
 }());
 /*
-Route     /google
-Des       Google Signin
-Params    none
+Route     /update
+Des       update user id
+Params    _id
+BODY      user data
 Access    Public
-Method    GET  
+Method    PUT  
 */
 
-Router.get("/google", _passport["default"].authenticate("google", {
-  scope: ["https://www.googleapis.com/auth/userinfo.profile", "https://www.googleapis.com/auth/userinfo.email"]
-}));
-/*
-Route     /google/callback
-Des       Google Signin Callback
-Params    none
-Access    Public
-Method    GET  
-*/
+Router.put("/update/:userId", /*#__PURE__*/function () {
+  var _ref3 = _asyncToGenerator( /*#__PURE__*/_regenerator["default"].mark(function _callee3(req, res) {
+    var userId, userData, updateUserData;
+    return _regenerator["default"].wrap(function _callee3$(_context3) {
+      while (1) {
+        switch (_context3.prev = _context3.next) {
+          case 0:
+            _context3.prev = 0;
+            userId = req.params.userId;
+            userData = req.body.userData;
+            _context3.next = 5;
+            return _allModels.UserModel.findByIdAndUpdate(userId, {
+              $set: userData
+            }, {
+              "new": true
+            });
 
-Router.get("/google/callback", _passport["default"].authenticate("google", {
-  failureRedirect: "/"
-}), function (req, res) {
-  return res.redirect("http://localhost:3000/google/".concat(req.session.passport.user.token));
-});
+          case 5:
+            updateUserData = _context3.sent;
+            return _context3.abrupt("return", res.json({
+              user: updateUserData
+            }));
+
+          case 9:
+            _context3.prev = 9;
+            _context3.t0 = _context3["catch"](0);
+            return _context3.abrupt("return", res.status(500).json({
+              error: _context3.t0.message
+            }));
+
+          case 12:
+          case "end":
+            return _context3.stop();
+        }
+      }
+    }, _callee3, null, [[0, 9]]);
+  }));
+
+  return function (_x5, _x6) {
+    return _ref3.apply(this, arguments);
+  };
+}());
 var _default = Router;
 exports["default"] = _default;

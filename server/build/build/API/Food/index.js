@@ -11,15 +11,11 @@ exports["default"] = void 0;
 
 var _express = _interopRequireDefault(require("express"));
 
-var _bcryptjs = _interopRequireDefault(require("bcryptjs"));
-
-var _jsonwebtoken = _interopRequireDefault(require("jsonwebtoken"));
-
 var _passport = _interopRequireDefault(require("passport"));
 
-var _user = require("../../database/user");
+var _allModels = require("../../database/allModels");
 
-var _auth = require("../../validation/auth");
+var _food = require("../../validation/food");
 
 function _interopRequireDefault(obj) {
   return obj && obj.__esModule ? obj : {
@@ -65,54 +61,52 @@ function _asyncToGenerator(fn) {
 
 var Router = _express["default"].Router();
 /*
-Route     /signup
-Des       Register new user
-Params    none
+Route     /r
+Des       Get all food based on particular restaurant
+Params    id
 Access    Public
-Method    POST  
+Method    GET  
 */
 
 
-Router.post("/signup", /*#__PURE__*/function () {
+Router.get("/r/:_id", /*#__PURE__*/function () {
   var _ref = _asyncToGenerator( /*#__PURE__*/_regenerator["default"].mark(function _callee(req, res) {
-    var newUser, token;
+    var _id, foods;
+
     return _regenerator["default"].wrap(function _callee$(_context) {
       while (1) {
         switch (_context.prev = _context.next) {
           case 0:
             _context.prev = 0;
             _context.next = 3;
-            return (0, _auth.ValidateSignup)(req.body.credentials);
+            return (0, _food.ValidateRestaurantId)(req.params);
 
           case 3:
-            _context.next = 5;
-            return _user.UserModel.findByEmailAndPhone(req.body.credentials);
+            _id = req.params._id;
+            _context.next = 6;
+            return _allModels.FoodModel.find({
+              restaurant: _id
+            });
 
-          case 5:
-            _context.next = 7;
-            return _user.UserModel.create(req.body.credentials);
-
-          case 7:
-            newUser = _context.sent;
-            token = newUser.generateJwtToken();
-            return _context.abrupt("return", res.status(200).json({
-              token: token,
-              status: "success"
+          case 6:
+            foods = _context.sent;
+            return _context.abrupt("return", res.json({
+              foods: foods
             }));
 
-          case 12:
-            _context.prev = 12;
+          case 10:
+            _context.prev = 10;
             _context.t0 = _context["catch"](0);
             return _context.abrupt("return", res.status(500).json({
               error: _context.t0.message
             }));
 
-          case 15:
+          case 13:
           case "end":
             return _context.stop();
         }
       }
-    }, _callee, null, [[0, 12]]);
+    }, _callee, null, [[0, 10]]);
   }));
 
   return function (_x, _x2) {
@@ -120,49 +114,45 @@ Router.post("/signup", /*#__PURE__*/function () {
   };
 }());
 /*
-Route     /signin
-Des       Signin with email and password
-Params    none
+Route     /:_id
+Des       Get food based on id
+Params    _id
 Access    Public
-Method    POST  
+Method    GET  
 */
 
-Router.post("/signin", /*#__PURE__*/function () {
+Router.get("/:_id", /*#__PURE__*/function () {
   var _ref2 = _asyncToGenerator( /*#__PURE__*/_regenerator["default"].mark(function _callee2(req, res) {
-    var user, token;
+    var _id, foods;
+
     return _regenerator["default"].wrap(function _callee2$(_context2) {
       while (1) {
         switch (_context2.prev = _context2.next) {
           case 0:
             _context2.prev = 0;
-            _context2.next = 3;
-            return (0, _auth.ValidateSignin)(req.body.credentials);
+            _id = req.params._id;
+            _context2.next = 4;
+            return _allModels.FoodModel.findById(_id);
 
-          case 3:
-            _context2.next = 5;
-            return _user.UserModel.findByEmailAndPassword(req.body.credentials);
-
-          case 5:
-            user = _context2.sent;
-            token = user.generateJwtToken();
-            return _context2.abrupt("return", res.status(200).json({
-              token: token,
-              status: "success"
+          case 4:
+            foods = _context2.sent;
+            return _context2.abrupt("return", res.json({
+              foods: foods
             }));
 
-          case 10:
-            _context2.prev = 10;
+          case 8:
+            _context2.prev = 8;
             _context2.t0 = _context2["catch"](0);
             return _context2.abrupt("return", res.status(500).json({
               error: _context2.t0.message
             }));
 
-          case 13:
+          case 11:
           case "end":
             return _context2.stop();
         }
       }
-    }, _callee2, null, [[0, 10]]);
+    }, _callee2, null, [[0, 8]]);
   }));
 
   return function (_x3, _x4) {
@@ -170,28 +160,58 @@ Router.post("/signin", /*#__PURE__*/function () {
   };
 }());
 /*
-Route     /google
-Des       Google Signin
-Params    none
+Route     /c
+Des       Get all food based on particular category
+Params    category
 Access    Public
 Method    GET  
 */
 
-Router.get("/google", _passport["default"].authenticate("google", {
-  scope: ["https://www.googleapis.com/auth/userinfo.profile", "https://www.googleapis.com/auth/userinfo.email"]
-}));
-/*
-Route     /google/callback
-Des       Google Signin Callback
-Params    none
-Access    Public
-Method    GET  
-*/
+Router.get("/r/:category", /*#__PURE__*/function () {
+  var _ref3 = _asyncToGenerator( /*#__PURE__*/_regenerator["default"].mark(function _callee3(req, res) {
+    var category, foods;
+    return _regenerator["default"].wrap(function _callee3$(_context3) {
+      while (1) {
+        switch (_context3.prev = _context3.next) {
+          case 0:
+            _context3.prev = 0;
+            _context3.next = 3;
+            return (0, _food.Validatecategory)(req.params);
 
-Router.get("/google/callback", _passport["default"].authenticate("google", {
-  failureRedirect: "/"
-}), function (req, res) {
-  return res.redirect("http://localhost:3000/google/".concat(req.session.passport.user.token));
-});
+          case 3:
+            category = req.params.category;
+            _context3.next = 6;
+            return _allModels.FoodModel.find({
+              category: {
+                $regex: category,
+                $options: "i"
+              }
+            });
+
+          case 6:
+            foods = _context3.sent;
+            return _context3.abrupt("return", res.json({
+              foods: foods
+            }));
+
+          case 10:
+            _context3.prev = 10;
+            _context3.t0 = _context3["catch"](0);
+            return _context3.abrupt("return", res.status(500).json({
+              error: _context3.t0.message
+            }));
+
+          case 13:
+          case "end":
+            return _context3.stop();
+        }
+      }
+    }, _callee3, null, [[0, 10]]);
+  }));
+
+  return function (_x5, _x6) {
+    return _ref3.apply(this, arguments);
+  };
+}());
 var _default = Router;
 exports["default"] = _default;
